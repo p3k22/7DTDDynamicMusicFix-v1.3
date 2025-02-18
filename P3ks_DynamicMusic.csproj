@@ -1,0 +1,89 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- Property Group defining core project settings -->
+	<PropertyGroup>
+		<!-- Target framework set to .NET Standard 2.1 -->
+		<TargetFramework>netstandard2.1</TargetFramework>
+
+		<!-- Root namespace set dynamically by replacing spaces with underscores in the project name -->
+		<RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+
+		<!-- Enable nullable reference types for better null safety -->
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<!-- Disable Warnings about Reference Version conflicts -->
+	<PropertyGroup>
+		<NoWarn>MSB3277</NoWarn>
+	</PropertyGroup>
+
+	<!-- Additional project properties -->
+	<PropertyGroup>
+		<!-- Version number of the assembly -->
+		<Version>1.0.0</Version>
+
+		<!-- Uncomment this line to append the version to the assembly name -->
+		<TargetName>$(AssemblyName)_v$(Version)</TargetName>
+
+		<!-- Always run post-build events, ensuring all tasks execute -->
+		<RunPostBuildEvent>Always</RunPostBuildEvent>
+
+		<!-- Disable fast up-to-date checks to force rebuilds when necessary -->
+		<DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+	</PropertyGroup>
+
+
+	<!-- Target to merge assemblies using ILRepack after the build completes -->
+	<Target Name="ILMergeAssemblies" AfterTargets="Build">
+		<PropertyGroup>
+			<PluginsDir>$(MSBuildProjectDirectory)\Plugins</PluginsDir>
+			<ILRepackTool>$(UserProfile)\.nuget\packages\ilrepack\2.0.36\tools\ILRepack.exe</ILRepackTool>
+			<MergedOutput>$(OutputPath)$(TargetName).dll</MergedOutput>
+			<MainAssembly>$(OutputPath)$(TargetFileName)</MainAssembly>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<!-- Gather all DLLs from Plugins directory EXCEPT Harmony -->
+			<MergingAssemblies Include="$(PluginsDir)\*.dll" />
+		</ItemGroup>
+
+		<Message Text="Merging files: @(MergingAssemblies, ', ')" Importance="High" />
+
+		<Exec Condition="@(MergingAssemblies-&gt;Count()) &gt; 0" Command="&quot;$(ILRepackTool)&quot; /out:&quot;$(MergedOutput)&quot; /wildcards /internalize /ndebug /target:library --lib:&quot;D:\SteamLibrary\steamapps\common\7 Days To Die\Mods\0_TFP_Harmony&quot; --lib:&quot;D:\SteamLibrary\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed&quot; &quot;$(MainAssembly)&quot; @(MergingAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
+	</Target>
+
+
+	<!-- References to external DLLs -->
+	<ItemGroup>
+		<!-- Harmony library used for patching -->
+		<Reference Include="0Harmony">
+			<HintPath>D:\SteamLibrary\steamapps\common\7 Days To Die\Mods\0_TFP_Harmony\0Harmony.dll</HintPath>
+			<Private>false</Private>
+			<CopyLocal>false</CopyLocal>
+		</Reference>
+
+		<!-- Core game assembly -->
+		<Reference Include="Assembly-CSharp">
+			<HintPath>D:\SteamLibrary\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\Assembly-CSharp.dll</HintPath>
+		</Reference>
+
+		<!-- Unity Engine core libraries -->
+		<Reference Include="UnityEngine">
+			<HintPath>D:\SteamLibrary\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.AudioModule">
+		  <HintPath>D:\SteamLibrary\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+		</Reference>
+
+		<!-- Unity Core module -->
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>D:\SteamLibrary\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.IMGUIModule">
+		  <HintPath>D:\SteamLibrary\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+		</Reference>
+
+	</ItemGroup>
+	
+
+</Project>
